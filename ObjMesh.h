@@ -4,8 +4,8 @@
 #include <map>
 #include <vector>
 
-//temp inc from other project
 #include "glm/glm/glm.hpp"
+#include "glm/glm/ext.hpp"
 
 #include <iostream>
 
@@ -66,27 +66,33 @@ struct ObjFace {
 };
 
 struct ObjMeshPrimitive {
-    std::map<int, GeometricVertex> geometricVertices = std::map<int, GeometricVertex>();
-    std::map<int, TextureVertex> textureVertices = std::map<int, TextureVertex>();
-    std::map<int, NormalVertex> normalVertices = std::map<int, NormalVertex>();
+    std::vector<GeometricVertex> geometricVertices = std::vector<GeometricVertex>();
+    std::vector<TextureVertex> textureVertices = std::vector<TextureVertex>();
+    std::vector<NormalVertex> normalVertices = std::vector<NormalVertex>();
 
     std::vector<ObjFace> faces = std::vector<ObjFace>();
 
     void print() {
-        for(std::pair<int, GeometricVertex> vertex : geometricVertices) {
-            std::cout << "v #" << vertex.first << ": " << vertex.second[0] << " "
-            << vertex.second[1] << " " << vertex.second[2] << " "
-            << vertex.second[3] << ", " << std::endl;
+        int i = 1;
+        for(GeometricVertex vertex : geometricVertices) {
+            std::cout << "v #" << i << ": " << vertex[0] << " "
+            << vertex[1] << " " << vertex[2] << " "
+            << vertex[3] << ", " << std::endl;
+            ++i;
         }
 
-        for(std::pair<int, TextureVertex> vertex : textureVertices) {
-            std::cout << "vt #" << vertex.first << ": " << vertex.second[0] << " "
-            << vertex.second[1] << " " << vertex.second[2] << ", " << std::endl;
+        i = 1;
+        for(TextureVertex vertex : textureVertices) {
+            std::cout << "vt #" << i << ": " << vertex[0] << " "
+            << vertex[1] << " " << vertex[2] << ", " << std::endl;
+            ++i;
         }
 
-        for(std::pair<int, NormalVertex> vertex : normalVertices) {
-            std::cout << "vn #" << vertex.first << ": " << vertex.second[0] << " "
-            << vertex.second[1] << " " << vertex.second[2] << ", " << std::endl;
+        i = 1;
+        for(NormalVertex vertex : normalVertices) {
+            std::cout << "vn #" << i << ": " << vertex[0] << " "
+            << vertex[1] << " " << vertex[2] << ", " << std::endl;
+            ++i;
         }
 
         int facenumber = 1;

@@ -16,5 +16,11 @@ namespace ObjLoader {
      * unique ptr is used because it prevents copying of the data, which would be very bad(tm).
      */
     std::unique_ptr<ObjMesh> combinePrimitives(std::vector<ObjMeshPrimitive>& objmeshprimitives);
+
+    /*
+     * @brief
+     * Triangulate a primitive mesh
+     */
+    void triangulatePrimitiveMesh(ObjMeshPrimitive& mesh);
 };
 #endif
