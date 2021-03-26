@@ -506,8 +506,8 @@ namespace {
     }
 };
 
-ObjMeshPrimitive ObjLoader::loadMeshFromFile(std::string pathToFile) {
-    ObjMeshPrimitive mesh = ObjMeshPrimitive();
+ObjMesh ObjLoader::loadMeshFromFile(std::string pathToFile) {
+    ObjMesh mesh = ObjMesh();
 
     std::ifstream meshStream(pathToFile);
 
@@ -515,7 +515,9 @@ ObjMeshPrimitive ObjLoader::loadMeshFromFile(std::string pathToFile) {
 
     removeObjLineContinuesFromStringVector(lines);
     
-    std::vector<ObjFace>& faces = mesh.faces;
+    ObjMesh submesh = ObjMesh();
+    submesh.setIsLeaf(true);
+    std::vector<ObjFace>& faces = submesh.getPrimitive().faces;
 
     int numberOfVertices = 0;
     int verticesNumOffset = 0;
@@ -525,6 +527,14 @@ ObjMeshPrimitive ObjLoader::loadMeshFromFile(std::string pathToFile) {
         std::string& line = lines.at(i);
         if(line.size() == 0) {
 
+        }else if(line.at(0) == 'o') {
+            mesh.name = line.substr(2);
+        }else if(line.at(0) == 'g') {
+            mesh.submeshes[submesh.name] = submesh;
+            submesh = ObjMesh();
+            submesh.setIsLeaf(true);
+            submesh.name = line.substr(2);
+            faces = submesh.getPrimitive().faces;
         }else if(line.at(0) == '#') {
 
         }else {
@@ -535,11 +545,11 @@ ObjMeshPrimitive ObjLoader::loadMeshFromFile(std::string pathToFile) {
                 }
 
                 if(line.substr(0, 2) == "v ") {
-                    processVertexLine(mesh, line, 0);
+                    processVertexLine(submesh.getPrimitive(), line, 0);
                 }else if(line.substr(0, 3) == "vt ") {
-                    processVertexLine(mesh, line, 1);
+                    processVertexLine(submesh.getPrimitive(), line, 1);
                 }else if(line.substr(0, 3) == "vn ") {
-                    processVertexLine(mesh, line, 2);
+                    processVertexLine(submesh.getPrimitive(), line, 2);
                 }else {
                     std::cout << "malformed vertex command (probably?) at line " << (i+1) << std::endl;
                     abort(); 
@@ -554,7 +564,7 @@ ObjMeshPrimitive ObjLoader::loadMeshFromFile(std::string pathToFile) {
             }
         }
     }
-
+    mesh.submeshes[submesh.name] = submesh;
     #ifdef PRINT_MESH_OUTPUT
         mesh.print();
     #endif
@@ -562,23 +572,36 @@ ObjMeshPrimitive ObjLoader::loadMeshFromFile(std::string pathToFile) {
     return mesh;
 }
 
-std::unique_ptr<ObjMesh> ObjLoader::combinePrimitives(std::vector<ObjMeshPrimitive>& objmeshprimitives) {
-    std::unique_ptr<ObjMesh> masterMesh = std::make_unique<ObjMesh>();
-    masterMesh->submeshes = objmeshprimitives;
-    return std::move(masterMesh);
+ObjMesh ObjLoader::combineMeshes(std::vector<ObjMesh> submeshes, std::string name) {
+    ObjMesh masterMesh = ObjMesh();
+    masterMesh.name = name;
+
+    for(ObjMesh smesh : submeshes) {
+        masterMesh.submeshes[smesh.name] = smesh;
+    }
+    return masterMesh;
 }
 
-void ObjLoader::triangulatePrimitiveMesh(ObjMeshPrimitive& mesh) {
-    std::vector<ObjFace>& faces = mesh.faces;
-    std::vector<GeometricVertex>& gv = mesh.geometricVertices;
-    std::vector<TextureVertex>& tv = mesh.textureVertices;
-    std::vector<NormalVertex>& nv = mesh.normalVertices;
+void ObjLoader::triangulateMesh(ObjMesh& combinedMeshes) {
+    for(std::pair<const std::string, ObjMesh>& meshpair : combinedMeshes.submeshes) {
+        if(!meshpair.second.isLeaf()) {
+            for(std::pair<const std::string, ObjMesh>& submesh : meshpair.second.submeshes) {
+                triangulateMesh(submesh.second);
+            }
+        }else {
+            ObjMeshPrimitive& mesh = meshpair.second.getPrimitive();
+            std::vector<ObjFace>& faces = mesh.faces;
+            std::vector<GeometricVertex>& gv = mesh.geometricVertices;
+            std::vector<TextureVertex>& tv = mesh.textureVertices;
+            std::vector<NormalVertex>& nv = mesh.normalVertices;
 
-    std::vector<ObjFace> newFaces = std::vector<ObjFace>();
+            std::vector<ObjFace> newFaces = std::vector<ObjFace>();
 
-    for(ObjFace& face : faces) {
-        newFaces.push_back(face);
-        triangulateFace(newFaces, newFaces.size() - 1, gv, tv, nv);
+            for(ObjFace& face : faces) {
+                newFaces.push_back(face);
+                triangulateFace(newFaces, newFaces.size() - 1, gv, tv, nv);
+            }
+            faces = newFaces;
+        }
     }
-    faces = newFaces;
 }

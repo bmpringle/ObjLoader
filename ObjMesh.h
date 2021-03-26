@@ -125,7 +125,25 @@ struct ObjMeshPrimitive {
 };
 
 struct ObjMesh {
-    std::vector<ObjMeshPrimitive> submeshes = std::vector<ObjMeshPrimitive>();
-};
+    ObjMesh(std::string name);
 
+    ObjMesh();
+
+    std::map<std::string, ObjMesh> submeshes = std::map<std::string, ObjMesh>();
+    std::string name = "untitled";
+
+    bool isLeaf();
+
+    void setIsLeaf(bool isLeafBool);
+
+    ObjMeshPrimitive& getPrimitive();
+
+    ObjMesh getMeshWithName(std::string name);
+
+    std::vector<ObjMeshPrimitive> getPrimitives();
+
+    private:
+        bool isLeafNode;
+        ObjMeshPrimitive mesh = ObjMeshPrimitive();   
+};
 #endif
