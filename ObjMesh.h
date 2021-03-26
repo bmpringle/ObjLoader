@@ -74,7 +74,7 @@ struct ObjMeshPrimitive {
 
     void print() {
         int i = 1;
-        for(GeometricVertex vertex : geometricVertices) {
+        for(GeometricVertex& vertex : geometricVertices) {
             std::cout << "v #" << i << ": " << vertex[0] << " "
             << vertex[1] << " " << vertex[2] << " "
             << vertex[3] << ", " << std::endl;
@@ -82,21 +82,21 @@ struct ObjMeshPrimitive {
         }
 
         i = 1;
-        for(TextureVertex vertex : textureVertices) {
+        for(TextureVertex& vertex : textureVertices) {
             std::cout << "vt #" << i << ": " << vertex[0] << " "
             << vertex[1] << " " << vertex[2] << ", " << std::endl;
             ++i;
         }
 
         i = 1;
-        for(NormalVertex vertex : normalVertices) {
+        for(NormalVertex& vertex : normalVertices) {
             std::cout << "vn #" << i << ": " << vertex[0] << " "
             << vertex[1] << " " << vertex[2] << ", " << std::endl;
             ++i;
         }
 
         int facenumber = 1;
-        for(ObjFace face : faces) {
+        for(ObjFace& face : faces) {
             std::cout << "f #" << facenumber << ": ";
             for(int i = 0; i < face.indicesVG.size(); ++i) {
                 bool hasVN = false;
@@ -138,9 +138,9 @@ struct ObjMesh {
 
     ObjMeshPrimitive& getPrimitive();
 
-    ObjMesh getMeshWithName(std::string name);
+    ObjMesh& getMeshWithName(std::string name);
 
-    std::vector<ObjMeshPrimitive> getPrimitives();
+    void getPrimitives(std::vector<ObjMeshPrimitive>& prims);
 
     private:
         bool isLeafNode;

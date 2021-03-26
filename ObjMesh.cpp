@@ -1,32 +1,26 @@
 #include "ObjMesh.h"
 #include "ObjLoader.h"
 
-ObjMesh ObjMesh::getMeshWithName(std::string name) {
+//never gauranteed to be valid post getMeshWithName call.
+ObjMesh& ObjMesh::getMeshWithName(std::string name) {
     if(this->name == name) {
         return *this;
     }else {
-        for(std::pair<const std::string, ObjMesh> submesh : submeshes) {
-            ObjMesh msh = submesh.second.getMeshWithName(name);
-            return msh;
+        for(std::pair<const std::string, ObjMesh>& submesh : submeshes) {
+            return submesh.second.getMeshWithName(name);
         }
         return ObjLoader::noMesh;
     }
 }
 
-std::vector<ObjMeshPrimitive> ObjMesh::getPrimitives() {
-    std::vector<ObjMeshPrimitive> prims = std::vector<ObjMeshPrimitive>();
+void ObjMesh::getPrimitives(std::vector<ObjMeshPrimitive>& prims) {
     if(isLeaf()) {
         prims.push_back(mesh);
     }else {
-        for(std::pair<const std::string, ObjMesh> submesh : submeshes) {
-            std::vector<ObjMeshPrimitive> tempPrims = std::vector<ObjMeshPrimitive>();
-            tempPrims = submesh.second.getPrimitives();
-            for(ObjMeshPrimitive prim : tempPrims) {
-                prims.push_back(prim);
-            }
+        for(std::pair<const std::string, ObjMesh>& submesh : submeshes) {
+             submesh.second.getPrimitives(prims);
         }
     }
-    return prims;
 } 
 
 ObjMeshPrimitive& ObjMesh::getPrimitive() {
