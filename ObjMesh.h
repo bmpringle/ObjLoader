@@ -75,97 +75,113 @@ enum IllumModel {
 
 //class because stuff should be private
 class Material {
-    Material(std::string _name, IllumModel i) : name(_name), lightingModel(i) {
+    public:
+        Material(std::string _name, IllumModel i) : name(_name), lightingModel(i) {
 
-    };
+        };
 
-    Material(std::string _name, glm::vec3 _ambient, glm::vec3 _diffuse, glm::vec3 _specular, float _opacity, float _shininess, IllumModel lmodel, std::string textureMapFilePath) : name(_name), lightingModel(lmodel) {
-        ambient = _ambient;
-        diffuse = _diffuse;
-        specular = _specular;
-        opacity = _opacity;
-        transparency = 1 - opacity;
-        shininess = _shininess;
-        textureMapPath = textureMapFilePath;
-    }
+        Material() : name(""), lightingModel(IllumModel(0)) {
 
-    //set methods
-    void setName(std::string& _name) {
-        name = _name;
-    }
+        };
 
-    void setAmbient(glm::vec3& _ambient) {
-        ambient = _ambient;
-    }
+        Material(std::string _name, glm::vec3 _ambient, glm::vec3 _diffuse, glm::vec3 _specular, float _opacity, float _shininess, IllumModel lmodel, std::string textureMapFilePath) : name(_name), lightingModel(lmodel) {
+            ambient = _ambient;
+            diffuse = _diffuse;
+            specular = _specular;
+            opacity = _opacity;
+            transparency = 1 - opacity;
+            shininess = _shininess;
+            textureMapPath = textureMapFilePath;
+        }
 
-    void setDiffuse(glm::vec3& _diffuse) {
-        diffuse = _diffuse;
-    }
+        //set methods
+        void setName(std::string& _name) {
+            name = _name;
+        }
 
-    void setSpecular(glm::vec3& _specular) {
-        specular = _specular;
-    }
+        void setAmbient(glm::vec3& _ambient) {
+            ambient = _ambient;
+        }
 
-    //also sets transparency to 1-opacity
-    void setOpacity(float& _opacity) {
-        opacity = _opacity;
-        transparency = 1 - opacity;
-    }
+        void setDiffuse(glm::vec3& _diffuse) {
+            diffuse = _diffuse;
+        }
 
-    //also sets opacity to 1-transparency
-    void setTransparency(float& _transparency) {
-        transparency = _transparency;
-        opacity = 1 - transparency;
-    }
+        void setSpecular(glm::vec3& _specular) {
+            specular = _specular;
+        }
 
-    void setShininess(float& _shininess) {
-        shininess = _shininess;
-    }
+        //also sets transparency to 1-opacity
+        void setOpacity(float& _opacity) {
+            opacity = _opacity;
+            transparency = 1 - opacity;
+        }
 
-    void setLightingModel(IllumModel& lmodel) {
-        lightingModel = lmodel;
-    }
+        //also sets opacity to 1-transparency
+        void setTransparency(float& _transparency) {
+            transparency = _transparency;
+            opacity = 1 - transparency;
+        }
 
-    void setTextureMapPath(std::string& path) {
-        textureMapPath = path;
-    }
+        void setShininess(float& _shininess) {
+            shininess = _shininess;
+        }
 
-    //get methods
-    std::string getName() {
-        return name;
-    }
+        void setLightingModel(IllumModel& lmodel) {
+            lightingModel = lmodel;
+        }
 
-    glm::vec3 getAmbient() {
-        return ambient;
-    }
+        void setTextureMapPath(std::string& path) {
+            textureMapPath = path;
+        }
 
-    glm::vec3 setDiffuse() {
-        return diffuse;
-    }
+        //get methods
+        std::string& getName() {
+            return name;
+        }
 
-    glm::vec3 setSpecular() {
-        return specular;
-    }
+        glm::vec3& getAmbient() {
+            return ambient;
+        }
 
-    float setOpacity() {
-        return opacity;
-    }
+        glm::vec3& getDiffuse() {
+            return diffuse;
+        }
 
-    float setTransparency() {
-        return transparency;
-    }
+        glm::vec3& getSpecular() {
+            return specular;
+        }
 
-    float setShininess() {
-        return shininess;
-    }
+        float& getOpacity() {
+            return opacity;
+        }
 
-    IllumModel setLightingModel() {
-        return lightingModel;
-    }
+        float& getTransparency() {
+            return transparency;
+        }
 
-    std::string setTextureMapPath() {
-        return textureMapPath;
-    }
+        float& getShininess() {
+            return shininess;
+        }
+
+        IllumModel& getLightingModel() {
+            return lightingModel;
+        }
+
+        std::string& getTextureMapPath() {
+            return textureMapPath;
+        }
+
+        void print() {
+            std::cout << "name: " << name << std::endl;
+            std::cout << "ambient: " << ambient.x << " " << ambient.y << " " << ambient.z << std::endl;
+            std::cout << "diffuse: " << diffuse.x << " " << diffuse.y << " " << diffuse.z << std::endl;
+            std::cout << "opacity: " << opacity << std::endl;
+            std::cout << "transparency: " << transparency << std::endl;
+            std::cout << "shininess: " << shininess << std::endl;
+            std::cout << "lightingModel: " << int(lightingModel) << std::endl;
+            std::cout << "textureMapPath: " << textureMapPath << std::endl;
+        }
 
     private:
         std::string name; //name of the material (referenced in obj file)
@@ -183,17 +199,26 @@ struct ObjFace {
     std::vector<int> indicesVG = std::vector<int>();
     std::vector<int> indicesVT = std::vector<int>();
     std::vector<int> indicesVN = std::vector<int>();
+    int materialIndex = -1; // -1 means there is no material associated with this face.
 };
 
 struct ObjMeshPrimitive {
     std::vector<GeometricVertex> geometricVertices = std::vector<GeometricVertex>();
     std::vector<TextureVertex> textureVertices = std::vector<TextureVertex>();
     std::vector<NormalVertex> normalVertices = std::vector<NormalVertex>();
+    std::vector<Material> materials = std::vector<Material>();
 
     std::vector<ObjFace> faces = std::vector<ObjFace>();
 
     void print() {
         int i = 1;
+        for(Material& mat : materials) {
+            std::cout << "material: #" << i << std::endl;
+            mat.print();
+            ++i;
+        }
+
+        i = 1;
         for(GeometricVertex& vertex : geometricVertices) {
             std::cout << "v #" << i << ": " << vertex[0] << " "
             << vertex[1] << " " << vertex[2] << " "
@@ -236,6 +261,12 @@ struct ObjMeshPrimitive {
                 }
                 if(i + 1 != face.indicesVG.size()) {
                     std::cout << ", ";
+                }
+
+                if(face.materialIndex != -1) {
+                    std::cout << "\t materialID: " << face.materialIndex << std::endl;
+                }else {
+                    std::cout << "\t no assigned material for this face" << std::endl;
                 }
             }
             std::cout << std::endl;

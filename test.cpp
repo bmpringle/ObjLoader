@@ -1,7 +1,7 @@
 #include "ObjLoader.h"
 
 int main() {
-    std::vector<ObjMesh> mesh = {ObjLoader::loadMeshFromFile("teapot.obj"), ObjLoader::loadMeshFromFile("cube-non-triangle.obj"), ObjLoader::loadMeshFromFile("test.obj")};//, ObjLoader::loadMeshFromFile("../MinecraftCloneSimple/src/assets/models/entity/high_quality_teapot.obj")};
+    std::vector<ObjMesh> mesh = {ObjLoader::loadMeshFromFile("teapot.obj"), ObjLoader::loadMeshFromFile("cube-non-triangle.obj"), ObjLoader::loadMeshFromFile("test.obj"), ObjLoader::loadMeshFromFile("../MinecraftCloneSimple/src/assets/models/entity/high_quality_teapot.obj")};
 
     std::vector<ObjMeshPrimitive> prims = std::vector<ObjMeshPrimitive>();
 
@@ -10,7 +10,7 @@ int main() {
     std::cout << "-------------------------------" << std::endl;
     std::cout << "original version:" << std::endl;
     std::cout << "-------------------------------" << std::endl;
-    
+
     masterMesh.getPrimitives(prims);
     
     for(ObjMeshPrimitive prim : prims) {
@@ -36,6 +36,5 @@ int main() {
     masterMesh.getMeshWithName("Cube").getPrimitives(prims);
     for(ObjMeshPrimitive prim : prims) {
         prim.print();
-    }
-    
+    } 
 }

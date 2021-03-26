@@ -157,10 +157,11 @@ namespace {
         }
     }
 
-    void processFaceLine(std::vector<ObjFace>& faces, std::string& line, int numberOfVertices, int verticesNumOffset) {
+    void processFaceLine(std::vector<ObjFace>& faces, std::string& line, int numberOfVertices, int verticesNumOffset, int currentMaterialID) {
         std::stringstream s(line.substr(2));
         std::string buffer;
         ObjFace newFace = ObjFace();
+        newFace.materialIndex = currentMaterialID;
 
         int i = 0;
         while(std::getline(s, buffer, ' ')) {
@@ -504,9 +505,134 @@ namespace {
         }
         faces.erase(faces.begin() + faceIndex);
     }
+
+    void readVec3(std::stringstream& ss, glm::vec3& data) {
+        std::string buffer = "";
+
+        try {
+            std::getline(ss, buffer, ' ');
+                
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), ' '), buffer.end());
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), '\n'), buffer.end());
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), '\r'), buffer.end());
+
+            data.x = std::stof(buffer);
+
+            std::getline(ss, buffer, ' ');
+                    
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), ' '), buffer.end());
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), '\n'), buffer.end());
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), '\r'), buffer.end());
+
+            data.y = std::stof(buffer);
+
+            std::getline(ss, buffer, ' ');
+                    
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), ' '), buffer.end());
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), '\n'), buffer.end());
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), '\r'), buffer.end());
+
+            data.z = std::stof(buffer);
+        }catch(std::exception e) {
+            std::cout << "error reading stringstream into vec3: " << ss.str() << std::endl;
+            abort();
+        }
+    }
+
+    void readFloat(std::stringstream& ss, float& data) {
+        std::string buffer = "";
+
+        try {
+            std::getline(ss, buffer, ' ');
+                
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), ' '), buffer.end());
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), '\n'), buffer.end());
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), '\r'), buffer.end());
+
+            data = std::stof(buffer);
+        }catch(std::exception e) {
+            std::cout << "error reading stringstream into float: " << ss.str() << std::endl;
+            abort();
+        }
+    }
+
+    void readMaterialsFromFile(std::vector<Material>& globalMeshMaterials, std::string mtllibpath) {
+        std::ifstream mtllib = std::ifstream(mtllibpath);
+
+        Material currentMaterial = Material();
+
+        std::string line = "";
+        while(std::getline(mtllib, line)) {
+            std::string buffer = "";
+            std::stringstream linestream(line);
+
+            std::getline(linestream, buffer, ' ');
+                
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), ' '), buffer.end());
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), '\n'), buffer.end());
+            buffer.erase(std::remove(buffer.begin(), buffer.end(), '\r'), buffer.end());
+
+            if(buffer == "newmtl") {
+                if(currentMaterial.getName() != "") {
+                    globalMeshMaterials.push_back(currentMaterial);
+                }
+                currentMaterial = Material();
+
+                std::getline(linestream, buffer, ' ');
+                    
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), ' '), buffer.end());
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), '\n'), buffer.end());
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), '\r'), buffer.end());
+
+                currentMaterial.setName(buffer);
+            }else if(buffer == "Ka") {
+                readVec3(linestream, currentMaterial.getAmbient());
+            }else if(buffer == "Kd") {
+                readVec3(linestream, currentMaterial.getDiffuse());
+            }else if(buffer == "Ks") {
+                readVec3(linestream, currentMaterial.getSpecular());
+            }else if(buffer == "d") {
+                readFloat(linestream, currentMaterial.getOpacity());
+            }else if(buffer == "Tr") {
+                readFloat(linestream, currentMaterial.getTransparency());
+            }else if(buffer == "Ns") {
+                readFloat(linestream, currentMaterial.getShininess());
+            }else if(buffer == "illum") {
+                std::getline(linestream, buffer, ' ');
+                    
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), ' '), buffer.end());
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), '\n'), buffer.end());
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), '\r'), buffer.end());
+
+                try {
+                    IllumModel lmodel = IllumModel(std::stoi(buffer));
+                    currentMaterial.setLightingModel(lmodel);
+                }catch(std::exception e) {
+                    std::cout << "error reading illum def" << std::endl;
+                }
+            }else if(buffer == "map_Ka") {
+                std::getline(linestream, buffer, ' ');
+                    
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), ' '), buffer.end());
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), '\n'), buffer.end());
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), '\r'), buffer.end());
+
+                currentMaterial.setTextureMapPath(buffer);
+            }
+        }
+
+        if(currentMaterial.getName() != "") {
+            globalMeshMaterials.push_back(currentMaterial);
+        }
+    }
 };
 
 ObjMesh ObjLoader::loadMeshFromFile(std::string pathToFile) {
+    int currentMaterialID = -1;
+
+    std::string mtllibname = "";
+    std::vector<Material> globalMeshMaterials = std::vector<Material>();
+
     ObjMesh mesh = ObjMesh();
 
     std::ifstream meshStream(pathToFile);
@@ -518,6 +644,7 @@ ObjMesh ObjLoader::loadMeshFromFile(std::string pathToFile) {
     ObjMesh submesh = ObjMesh();
     submesh.setIsLeaf(true);
     std::vector<ObjFace>& faces = submesh.getPrimitive().faces;
+    std::vector<Material>& materials = submesh.getPrimitive().materials;
 
     int numberOfVertices = 0;
     int verticesNumOffset = 0;
@@ -530,13 +657,36 @@ ObjMesh ObjLoader::loadMeshFromFile(std::string pathToFile) {
         }else if(line.at(0) == 'o') {
             mesh.name = line.substr(2);
         }else if(line.at(0) == 'g') {
+            submesh.getPrimitive().materials = globalMeshMaterials;
             mesh.submeshes[submesh.name] = submesh;
             submesh = ObjMesh();
             submesh.setIsLeaf(true);
             submesh.name = line.substr(2);
             faces = submesh.getPrimitive().faces;
+            materials = submesh.getPrimitive().materials;
         }else if(line.at(0) == '#') {
 
+        }else if(line.substr(0, 6) == "mtllib") {
+            mtllibname = line.substr(7);
+            mtllibname.erase(std::remove(mtllibname.begin(), mtllibname.end(), ' '), mtllibname.end());
+            mtllibname.erase(std::remove(mtllibname.begin(), mtllibname.end(), '\n'), mtllibname.end());
+            mtllibname.erase(std::remove(mtllibname.begin(), mtllibname.end(), '\r'), mtllibname.end());
+            readMaterialsFromFile(globalMeshMaterials, mtllibname);
+        }else if(line.substr(0, 6) == "usemtl") {
+            std::string matname = line.substr(7);
+            matname.erase(std::remove(matname.begin(), matname.end(), ' '), matname.end());
+            matname.erase(std::remove(matname.begin(), matname.end(), '\n'), matname.end());
+            matname.erase(std::remove(matname.begin(), matname.end(), '\r'), matname.end());
+            auto is_equal = [matname](Material& mat){ 
+                return mat.getName() == matname; 
+            };
+            auto iter = std::find_if(globalMeshMaterials.begin(), globalMeshMaterials.end(), is_equal);
+            if(iter == globalMeshMaterials.end()) {
+                std::cout << "material specified has not been loaded: " << matname << "while loading: " << pathToFile << std::endl;
+                abort();
+            }else {
+                currentMaterialID = iter - globalMeshMaterials.begin();
+            }
         }else {
             if(line.at(0) == 'v') {
                 if(onFacesDef) {
@@ -560,10 +710,11 @@ ObjMesh ObjLoader::loadMeshFromFile(std::string pathToFile) {
                     verticesNumOffset = verticesNumOffset + numberOfVertices;
                 }
                 onFacesDef = true;
-                processFaceLine(faces, line, numberOfVertices, verticesNumOffset);
+                processFaceLine(faces, line, numberOfVertices, verticesNumOffset, currentMaterialID);
             }
         }
     }
+    submesh.getPrimitive().materials = globalMeshMaterials;
     mesh.submeshes[submesh.name] = submesh;
     #ifdef PRINT_MESH_OUTPUT
         mesh.print();
