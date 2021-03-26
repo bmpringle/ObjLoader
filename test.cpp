@@ -10,15 +10,19 @@ int main() {
     std::cout << "-------------------------------" << std::endl;
     std::cout << "original version:" << std::endl;
     std::cout << "-------------------------------" << std::endl;
+    
     masterMesh.getPrimitives(prims);
     
     for(ObjMeshPrimitive prim : prims) {
         prim.print();
     }
+
     ObjLoader::triangulateMesh(masterMesh);
     std::cout << "-------------------------------" << std::endl;
     std::cout << "triangulated version:" << std::endl;
     std::cout << "-------------------------------" << std::endl;
+
+    prims.clear();
     masterMesh.getPrimitives(prims);
     for(ObjMeshPrimitive prim : prims) {
         prim.print();
@@ -28,6 +32,7 @@ int main() {
     std::cout << "get cube model specifically version:" << std::endl;
     std::cout << "-------------------------------" << std::endl;
 
+    prims.clear();
     masterMesh.getMeshWithName("Cube").getPrimitives(prims);
     for(ObjMeshPrimitive prim : prims) {
         prim.print();
