@@ -1,5 +1,5 @@
 test:
-	g++ -g -std=c++2a test.cpp lib/objLoaderLib.a -fsanitize=undefined -o test
+	g++ -g -std=c++2a test.cpp lib/objLoaderLib.a -o test
 library:
 ifeq ($(OS),Windows_NT) 
 	#todo: add support for garbage-tm os
@@ -7,8 +7,8 @@ endif
 ifneq ($(OS),Windows_NT) 
 	mkdir -p obj
 	mkdir -p lib
-	g++ -g -std=c++2a -c ObjLoader.cpp -O3 -fsanitize=undefined -o ./obj/ObjLoader.o
-	g++ -g -std=c++2a -c ObjMesh.cpp -O3 -fsanitize=undefined -o ./obj/ObjMesh.o
+	g++ -g -std=c++2a -c ObjLoader.cpp -O3 -o ./obj/ObjLoader.o
+	g++ -g -std=c++2a -c ObjMesh.cpp -O3 -o ./obj/ObjMesh.o
 	ar rvs ./lib/objLoaderLib.a ./obj/ObjLoader.o ./obj/ObjMesh.o
 endif
 
