@@ -671,7 +671,11 @@ ObjMesh ObjLoader::loadMeshFromFile(std::string pathToFile) {
             mtllibname.erase(std::remove(mtllibname.begin(), mtllibname.end(), ' '), mtllibname.end());
             mtllibname.erase(std::remove(mtllibname.begin(), mtllibname.end(), '\n'), mtllibname.end());
             mtllibname.erase(std::remove(mtllibname.begin(), mtllibname.end(), '\r'), mtllibname.end());
-            readMaterialsFromFile(globalMeshMaterials, mtllibname);
+            if(mtllibname.substr(mtllibname.size() - 4) == ".mtl") {
+                readMaterialsFromFile(globalMeshMaterials, mtllibname);
+            }else {
+                readMaterialsFromFile(globalMeshMaterials, mtllibname+".mtl");
+            }
         }else if(line.substr(0, 6) == "usemtl") {
             std::string matname = line.substr(7);
             matname.erase(std::remove(matname.begin(), matname.end(), ' '), matname.end());
