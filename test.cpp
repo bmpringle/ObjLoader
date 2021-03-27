@@ -1,7 +1,7 @@
 #include "ObjLoader.h"
 
 int main() {
-    std::vector<ObjMesh> mesh = {ObjLoader::loadMeshFromFile("teapot.obj"), ObjLoader::loadMeshFromFile("cube-non-triangle.obj"), ObjLoader::loadMeshFromFile("test.obj"), ObjLoader::loadMeshFromFile("../MinecraftCloneSimple/src/assets/models/entity/high_quality_teapot.obj")};
+    std::vector<ObjMesh> mesh = {ObjLoader::loadMeshFromFile("./meshes/teapot.obj"), ObjLoader::loadMeshFromFile("./meshes/cube-non-triangle.obj"), ObjLoader::loadMeshFromFile("./meshes/test.obj"), ObjLoader::loadMeshFromFile("../MinecraftCloneSimple/src/assets/models/entity/high_quality_teapot.obj")};
 
     std::vector<ObjMeshPrimitive> prims = std::vector<ObjMeshPrimitive>();
 

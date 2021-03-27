@@ -628,6 +628,23 @@ namespace {
 };
 
 ObjMesh ObjLoader::loadMeshFromFile(std::string pathToFile) {
+    if(pathToFile.size() == 0) {
+        std::cout << "invalid filepath: " << pathToFile << std::endl;
+        abort();
+    }
+    //get file dir
+    int i = 0;
+    for(i = pathToFile.size() - 1; i > 0; --i) {
+        char c = pathToFile.at(i);
+        if(c == '/') {
+            break;
+        }
+    }
+    std::string fileFolder = "";
+    if(i > 0) {
+        fileFolder = pathToFile.substr(0, i + 1);
+    }
+
     int currentMaterialID = -1;
 
     std::string mtllibname = "";
@@ -672,9 +689,9 @@ ObjMesh ObjLoader::loadMeshFromFile(std::string pathToFile) {
             mtllibname.erase(std::remove(mtllibname.begin(), mtllibname.end(), '\n'), mtllibname.end());
             mtllibname.erase(std::remove(mtllibname.begin(), mtllibname.end(), '\r'), mtllibname.end());
             if(mtllibname.substr(mtllibname.size() - 4) == ".mtl") {
-                readMaterialsFromFile(globalMeshMaterials, mtllibname);
+                readMaterialsFromFile(globalMeshMaterials, fileFolder + mtllibname);
             }else {
-                readMaterialsFromFile(globalMeshMaterials, mtllibname+".mtl");
+                readMaterialsFromFile(globalMeshMaterials, fileFolder + mtllibname + ".mtl");
             }
         }else if(line.substr(0, 6) == "usemtl") {
             std::string matname = line.substr(7);

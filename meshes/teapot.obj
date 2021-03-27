@@ -1,6 +1,4 @@
-#got this teapot from: https://www.cs.utah.edu/~natevm/newell_teaset/newell_teaset.zip
-
-mtllib teapot.mtl
+mtllib teapot
 
 g Mesh1 Teapot Model
 
