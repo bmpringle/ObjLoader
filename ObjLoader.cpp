@@ -506,8 +506,17 @@ namespace {
     }
 };
 
-ObjMeshPrimitive ObjLoader::loadMeshFromFile(std::string pathToFile) {
+ObjMesh ObjLoader::loadMeshFromFile(std::string pathToFile) {
+    int untitledCounter = 0;
+
+    std::vector<GeometricVertex> globalGV = std::vector<GeometricVertex>();
+    std::vector<TextureVertex> globalTV = std::vector<TextureVertex>();
+    std::vector<NormalVertex> globalNV = std::vector<NormalVertex>();
+
+    ObjMesh masterMesh = ObjMesh();
+
     ObjMeshPrimitive mesh = ObjMeshPrimitive();
+    std::string name = "";
 
     std::ifstream meshStream(pathToFile);
 
@@ -527,6 +536,22 @@ ObjMeshPrimitive ObjLoader::loadMeshFromFile(std::string pathToFile) {
 
         }else if(line.at(0) == '#') {
 
+        }else if(line.at(0) == 'g') {
+            globalGV = mesh.geometricVertices;
+            globalTV = mesh.textureVertices;
+            globalNV = mesh.normalVertices;
+
+            if(name != "") {
+                masterMesh.primitiveMeshes[name] = mesh;
+            }else {
+                masterMesh.primitiveMeshes["untitled" + std::to_string(untitledCounter)] = mesh;
+            }
+            mesh = ObjMeshPrimitive();
+            name = line.substr(2, line.size() - 3);
+
+            mesh.geometricVertices = globalGV;
+            mesh.textureVertices = globalTV;
+            mesh.normalVertices = globalNV;
         }else {
             if(line.at(0) == 'v') {
                 if(onFacesDef) {
@@ -555,30 +580,61 @@ ObjMeshPrimitive ObjLoader::loadMeshFromFile(std::string pathToFile) {
         }
     }
 
+    masterMesh.primitiveMeshes[name] = mesh;
+
     #ifdef PRINT_MESH_OUTPUT
         mesh.print();
     #endif
 
-    return mesh;
+    return masterMesh;
 }
 
-std::unique_ptr<ObjMesh> ObjLoader::combinePrimitives(std::vector<ObjMeshPrimitive>& objmeshprimitives) {
-    std::unique_ptr<ObjMesh> masterMesh = std::make_unique<ObjMesh>();
-    masterMesh->submeshes = objmeshprimitives;
-    return std::move(masterMesh);
-}
+ObjMeshCollection ObjLoader::combineMeshes(std::vector<ObjMesh>& objmeshprimitives, std::vector<std::string>& names) {
+    assert(names.size() == objmeshprimitives.size());
 
-void ObjLoader::triangulatePrimitiveMesh(ObjMeshPrimitive& mesh) {
-    std::vector<ObjFace>& faces = mesh.faces;
-    std::vector<GeometricVertex>& gv = mesh.geometricVertices;
-    std::vector<TextureVertex>& tv = mesh.textureVertices;
-    std::vector<NormalVertex>& nv = mesh.normalVertices;
+    ObjMeshCollection masterMesh = ObjMeshCollection();
 
-    std::vector<ObjFace> newFaces = std::vector<ObjFace>();
-
-    for(ObjFace& face : faces) {
-        newFaces.push_back(face);
-        triangulateFace(newFaces, newFaces.size() - 1, gv, tv, nv);
+    int i = 0;
+    for(ObjMesh& submesh : objmeshprimitives) {
+        masterMesh.setSubmesh(names.at(i), submesh);
+        ++i;
     }
-    faces = newFaces;
+
+    return masterMesh;
+}
+
+void ObjLoader::triangulateMesh(ObjMesh& masterMesh) {
+    for(std::pair<const std::string, ObjMeshPrimitive>& primitiveMesh : masterMesh.primitiveMeshes) {
+        std::vector<ObjFace>& faces = primitiveMesh.second.faces;
+        std::vector<GeometricVertex>& gv = primitiveMesh.second.geometricVertices;
+        std::vector<TextureVertex>& tv = primitiveMesh.second.textureVertices;
+        std::vector<NormalVertex>& nv = primitiveMesh.second.normalVertices;
+
+        std::vector<ObjFace> newFaces = std::vector<ObjFace>();
+
+        for(ObjFace& face : faces) {
+            newFaces.push_back(face);
+            triangulateFace(newFaces, newFaces.size() - 1, gv, tv, nv);
+        }
+        faces = newFaces;
+    }
+}
+
+void ObjLoader::triangulateMesh(ObjMeshCollection& masterMesh) {
+    for(std::pair<const std::string, ObjMesh>& mesh : masterMesh.getSubmeshMap()) {
+        for(std::pair<const std::string, ObjMeshPrimitive>& primitiveMesh : mesh.second.primitiveMeshes) {
+            std::vector<ObjFace>& faces = primitiveMesh.second.faces;
+            std::vector<GeometricVertex>& gv = primitiveMesh.second.geometricVertices;
+            std::vector<TextureVertex>& tv = primitiveMesh.second.textureVertices;
+            std::vector<NormalVertex>& nv = primitiveMesh.second.normalVertices;
+
+            std::vector<ObjFace> newFaces = std::vector<ObjFace>();
+
+            for(ObjFace& face : faces) {
+                newFaces.push_back(face);
+                triangulateFace(newFaces, newFaces.size() - 1, gv, tv, nv);
+            }
+            faces = newFaces;
+        }
+    }
 }

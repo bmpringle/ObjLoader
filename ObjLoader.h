@@ -9,18 +9,20 @@
 #include <sstream>
 
 namespace ObjLoader {
-    ObjMeshPrimitive loadMeshFromFile(std::string pathToFile);
+    ObjMesh loadMeshFromFile(std::string pathToFile);
 
     /*
      * @brief
      * unique ptr is used because it prevents copying of the data, which would be very bad(tm).
      */
-    std::unique_ptr<ObjMesh> combinePrimitives(std::vector<ObjMeshPrimitive>& objmeshprimitives);
+    ObjMeshCollection combineMeshes(std::vector<ObjMesh>& objmeshprimitives, std::vector<std::string>& names);
 
     /*
      * @brief
      * Triangulate a primitive mesh
      */
-    void triangulatePrimitiveMesh(ObjMeshPrimitive& mesh);
+    void triangulateMesh(ObjMeshCollection& masterMesh);
+
+    void triangulateMesh(ObjMesh& masterMesh);
 };
 #endif

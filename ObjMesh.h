@@ -125,7 +125,25 @@ struct ObjMeshPrimitive {
 };
 
 struct ObjMesh {
-    std::vector<ObjMeshPrimitive> submeshes = std::vector<ObjMeshPrimitive>();
+    std::map<std::string, ObjMeshPrimitive> primitiveMeshes = std::map<std::string, ObjMeshPrimitive>();
+};
+
+class ObjMeshCollection {
+    public:
+        ObjMesh& lookupSubmesh(std::string name) {
+            return submeshes.at(name);
+        }
+
+        void setSubmesh(std::string name, ObjMesh& submesh) {
+            submeshes[name] = submesh;
+        }
+
+        std::map<std::string, ObjMesh>& getSubmeshMap() {
+            return submeshes;
+        }
+
+    private:
+        std::map<std::string, ObjMesh> submeshes = std::map<std::string, ObjMesh>();
 };
 
 #endif
