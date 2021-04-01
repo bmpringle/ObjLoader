@@ -7,7 +7,7 @@ endif
 ifneq ($(OS),Windows_NT) 
 	mkdir -p obj
 	mkdir -p lib
-	g++ -g -std=c++2a -c ObjLoader.cpp -O3 -o ./obj/ObjLoader.o
+	g++ -g -std=c++2a -c ObjLoader.cpp -o ./obj/ObjLoader.o
 	ar rvs ./lib/objLoaderLib.a ./obj/ObjLoader.o
 endif
 
