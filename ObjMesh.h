@@ -84,101 +84,102 @@ enum IllumModel {
 
 //class because stuff should be private
 class Material {
-    Material(std::string _name, IllumModel i) : name(_name), lightingModel(i) {
+    public:
+        Material(std::string _name, IllumModel i) : name(_name), lightingModel(i) {
 
-    }
+        }
 
-    Material() : name(""), lightingModel(0) {
+        Material() : name(""), lightingModel(IllumModel(0)) {
 
-    }
+        }
 
-    Material(std::string _name, glm::vec3 _ambient, glm::vec3 _diffuse, glm::vec3 _specular, float _opacity, float _shininess, IllumModel lmodel, std::string textureMapFilePath) : name(_name), lightingModel(lmodel) {
-        ambient = _ambient;
-        diffuse = _diffuse;
-        specular = _specular;
+        Material(std::string _name, glm::vec3 _ambient, glm::vec3 _diffuse, glm::vec3 _specular, float _opacity, float _shininess, IllumModel lmodel, std::string textureMapFilePath) : name(_name), lightingModel(lmodel) {
+            ambient = _ambient;
+            diffuse = _diffuse;
+            specular = _specular;
+            opacity = _opacity;
+            transparency = 1 - opacity;
+            shininess = _shininess;
+            textureMapPath = textureMapFilePath;
+        }
+
+        //set methods
+        void setName(std::string& _name) {
+            name = _name;
+        }
+
+        void setAmbient(glm::vec3& _ambient) {
+            ambient = _ambient;
+        }
+
+        void setDiffuse(glm::vec3& _diffuse) {
+            diffuse = _diffuse;
+        }
+
+        void setSpecular(glm::vec3& _specular) {
+            specular = _specular;
+        }
+
+        //also sets transparency to 1-opacity
+        void setOpacity(float& _opacity) {
         opacity = _opacity;
-        transparency = 1 - opacity;
-        shininess = _shininess;
-        textureMapPath = textureMapFilePath;
-    }
+            transparency = 1 - opacity;
+        }
 
-    //set methods
-    void setName(std::string& _name) {
-        name = _name;
-    }
+        //also sets opacity to 1-transparency
+        void setTransparency(float& _transparency) {
+            transparency = _transparency;
+            opacity = 1 - transparency;
+        }
 
-    void setAmbient(glm::vec3& _ambient) {
-        ambient = _ambient;
-    }
+        void setShininess(float& _shininess) {
+            shininess = _shininess;
+        }
 
-    void setDiffuse(glm::vec3& _diffuse) {
-        diffuse = _diffuse;
-    }
+        void setLightingModel(IllumModel& lmodel) {
+            lightingModel = lmodel;
+        }
 
-    void setSpecular(glm::vec3& _specular) {
-        specular = _specular;
-    }
+        void setTextureMapPath(std::string& path) {
+            textureMapPath = path;
+        }
 
-    //also sets transparency to 1-opacity
-    void setOpacity(float& _opacity) {
-       opacity = _opacity;
-        transparency = 1 - opacity;
-    }
+        //get methods
+        std::string& getName() {
+            return name;
+        }
 
-    //also sets opacity to 1-transparency
-    void setTransparency(float& _transparency) {
-        transparency = _transparency;
-        opacity = 1 - transparency;
-    }
+        glm::vec3& getAmbient() {
+            return ambient;
+        }
 
-    void setShininess(float& _shininess) {
-        shininess = _shininess;
-    }
+        glm::vec3& getDiffuse() {
+            return diffuse;
+        }
 
-    void setLightingModel(IllumModel& lmodel) {
-        lightingModel = lmodel;
-    }
+        glm::vec3& getSpecular() {
+            return specular;
+        }
 
-    void setTextureMapPath(std::string& path) {
-        textureMapPath = path;
-    }
+        float& getOpacity() {
+            return opacity;
+        }
 
-    //get methods
-    std::string getName() {
-        return name;
-    }
+        float& getTransparency() {
+            return transparency;
+        }
 
-    glm::vec3 getAmbient() {
-        return ambient;
-    }
+        float& getShininess() {
+            return shininess;
+        }
 
-    glm::vec3 getDiffuse() {
-        return diffuse;
-    }
+        IllumModel& getLightingModel() {
+            return lightingModel;
+        }
 
-    glm::vec3 getSpecular() {
-        return specular;
-    }
-
-    float getOpacity() {
-        return opacity;
-    }
-
-    float getTransparency() {
-        return transparency;
-    }
-
-    float sgetShininess() {
-        return shininess;
-    }
-
-    IllumModel getLightingModel() {
-        return lightingModel;
-    }
-
-    std::string getTextureMapPath() {
-        return textureMapPath;
-    }
+        std::string& getTextureMapPath() {
+            return textureMapPath;
+        }
 
     private:
         std::string name; //name of the material (referenced in obj file)
@@ -247,8 +248,21 @@ struct ObjMeshPrimitive {
                     std::cout << ", ";
                 }
             }
+            std::cout << ", materialIndex: " << face.materialIndex;
             std::cout << std::endl;
             ++facenumber;
+        }
+
+        //print Materials
+        for(Material& material : materials) {
+            std::cout << "Material Name: " << material.getName() << std::endl;
+            std::cout << "Material Ambient Light: " << material.getAmbient()[0] << " " << material.getAmbient()[1] << " " << material.getAmbient()[2] << std::endl;
+            std::cout << "Material Diffuse Light: " << material.getDiffuse()[0] << " " << material.getDiffuse()[1] << " " << material.getDiffuse()[2] << std::endl;
+            std::cout << "Material Specular Light: " << material.getSpecular()[0] << " " << material.getSpecular()[1] << " " << material.getSpecular()[2] << std::endl;
+            std::cout << "Material Opacity: " << material.getOpacity() << std::endl;
+            std::cout << "Material Shininess: " << material.getShininess() << std::endl;
+            std::cout << "Material Lighting Model: " << material.getLightingModel() << std::endl;
+            std::cout << "Material Texture Map Path: " << material.getTextureMapPath() << std::endl;
         }
     }
 };
