@@ -438,6 +438,7 @@ namespace {
                     int nextVert = (j + 1 < vertsFromFace.size()) ? j + 1 : 0;
                     
                     ObjFace newFace = ObjFace();
+                    newFace.materialIndex = face.materialIndex;
 
                     newFace.indicesVG.push_back(indicesFromFace.at(j));
                     newFace.indicesVG.push_back(indicesFromFace.at(prevVert));
@@ -479,6 +480,7 @@ namespace {
                     break;
                 }else {
                     ObjFace newFace = ObjFace();
+                    newFace.materialIndex = face.materialIndex;
 
                     newFace.indicesVG.push_back(indicesFromFace.at(1));
                     newFace.indicesVG.push_back(indicesFromFace.at(0));
