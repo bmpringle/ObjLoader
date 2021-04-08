@@ -1,8 +1,8 @@
 #include "ObjLoader.h"
 
 int main() {
-    std::vector<ObjMesh> meshes = {ObjLoader::loadMeshFromFile("teapot.obj"), ObjLoader::loadMeshFromFile("cube-non-triangle.obj")/*, ObjLoader::loadMeshFromFile("test.obj")*/};
-    std::vector<std::string> names = {"teapot", "cube-non-triangle"/*, "test"*/};
+    std::vector<ObjMesh> meshes = {ObjLoader::loadMeshFromFile("teapot.obj"), ObjLoader::loadMeshFromFile("cube-non-triangle.obj"), ObjLoader::loadMeshFromFile("rubberball.obj")};
+    std::vector<std::string> names = {"teapot", "cube-non-triangle", "rubberball"};
     ObjMeshCollection mesh = ObjLoader::combineMeshes(meshes, names);
     std::cout << "-------------------------------" << std::endl;
     std::cout << "original version:" << std::endl;

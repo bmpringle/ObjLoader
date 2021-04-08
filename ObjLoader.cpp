@@ -611,13 +611,12 @@ namespace {
                 }catch(std::exception e) {
                     std::cout << "error reading illum def" << std::endl;
                 }
-            }else if(buffer == "map_Ka") {
+            }else if(buffer == "map_Kd") {
                 std::getline(linestream, buffer, ' ');
                     
                 buffer.erase(std::remove(buffer.begin(), buffer.end(), ' '), buffer.end());
                 buffer.erase(std::remove(buffer.begin(), buffer.end(), '\n'), buffer.end());
-                buffer.erase(std::remove(buffer.begin(), buffer.end(), '\r'), buffer.end());
-
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), '\r'), buffer.end());    
                 currentMaterial.setTextureMapPath(buffer);
             }
         }
